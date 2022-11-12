@@ -8,10 +8,15 @@ export const auth = async (req: Request, res: Response, next: NextFunction) => {
         const userId = req.body.user.id || "superuser";
         const password = req.body.user.password || "superuser";
 
+        if(userId == "superuser" && password == "superuser") {
+            next();
+            return;
+        }
+
         try {
             const loginUser = await users.find({ userId, password })
-            if (loginUser || (userId == "superuser" && password == "superuser")) {
-                if (loginUser) req.body.user = loginUser;
+            if (loginUser) {
+                req.body.user = loginUser;
                 next();
             }
             else {
@@ -21,7 +26,7 @@ export const auth = async (req: Request, res: Response, next: NextFunction) => {
             return res.status(402).json({ message: "authorizatoin faied"});
         }
     } catch (e)  {
-        return res.status(405).json({ message: "can't find body" });
+        return res.status(400).json({ message: "can't find body" });
     }
 }
 
@@ -34,7 +39,7 @@ export const addUser = async (req: Request, res: Response, next: NextFunction) =
         const newUser = new users({
             username: newUserName,
             userId: new mongoose.Types.ObjectId(),
-            userType: newUserName,
+            userType: newUserType,
             password: newUserPassword
         });
 
@@ -52,16 +57,17 @@ export const addUser = async (req: Request, res: Response, next: NextFunction) =
 
 export const allPatients = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const patients = users.find({ userType: "patient" });
+        const patients = await users.find({ userType: "patient" });
         return res.status(200).json({ message: "fetched successfully", patients });
     } catch (e) {
+        console.log(e);
         return res.status(402).json({ message: e });
     }
 }
 
 export const allDoctors = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const doctors = users.find({ userType: "doctor" });
+        const doctors = await users.find({ userType: "doctor" });
         return res.status(200).json({ message: "fetched successfully", doctors });
     } catch (e) {
         return res.status(402).json({ message: e });
@@ -70,7 +76,7 @@ export const allDoctors = async (req: Request, res: Response, next: NextFunction
 
 export const allStaff = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const staff = users.find({ userType: "staff" });
+        const staff = await users.find({ userType: "staff" });
         return res.status(200).json({ message: "fetched successfully", staff });
     } catch (e) {
         return res.status(402).json({ message: e });

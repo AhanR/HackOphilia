@@ -25,11 +25,6 @@ mongoose
 function runRoutes():void {
     router.use(cors());
     router.use(bodyParser.json());
-    
-    router.use( (req : Request, res : Response, next : NextFunction) => {
-        console.log(req.body);
-        next();
-    } );
 
     router.use(auth);
 
